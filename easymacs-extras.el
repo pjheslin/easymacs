@@ -61,6 +61,9 @@
 (setq-default TeX-save-query nil)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex) 
 (setq reftex-plug-into-AUCTeX t)
+(setq reftex-extra-bindings t)
+; To search again after searching doc with C-c s
+(bind-key* (kbd "C-*") 'tags-loop-continue)
 (setq TeX-source-correlate-method 'synctex)
 (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
 (setq TeX-source-correlate-start-server t)
@@ -69,21 +72,12 @@
 			      ;; For folding comments
 			      (hs-minor-mode 1)))
 
-; (defun LaTeX-insert-footnote ()
-;   "Insert a \\footnote{} macro in a LaTeX-document."
-;   (interactive)
-;   (TeX-insert-macro "footnote")
-;   (insert "\n")
-;   (forward-char)
-;   (insert " %")
-;   (unless (looking-at "\n")
-;     (insert "\n"))
-;   (backward-char 4))
-
 (defun LaTeX-insert-footnote ()
   "Insert a \\footnote{} macro in a LaTeX-document."
   (interactive)
-  (TeX-insert-macro "footnote"))
+  (TeX-insert-macro "footnote")
+  (insert "  ")
+  (backward-char))
 
 (defun LaTeX-insert-emph ()
   "Insert an \\emph{} macro in a LaTeX-document."
@@ -127,7 +121,7 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
     (local-set-key (kbd "M-p") 'LaTeX-insert-textsc)
     (local-set-key (kbd "M-f") 'LaTeX-insert-footnote)
     (local-set-key (kbd "<f9>") 'easymacs-auctex-help-at-point)
-    (local-set-key (kbd "<S-f9>")  'reftex-grep-document)
+    (local-set-key (kbd "<S-f9>")  'reftex-search-document)
     (local-set-key (kbd "<f10>") 'LaTeX-close-environment)
     (local-set-key (kbd "<S-f10>") 'TeX-complete-symbol)
     (local-set-key (kbd "<M-f10>") 'LaTeX-environment)
@@ -160,8 +154,4 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 			      (local-set-key (kbd "C-e")
 					     'LaTeX-insert-emph)))
 
-(add-hook 'reftex-index-phrases-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-e")
-			   'LaTeX-insert-emph)))
 
