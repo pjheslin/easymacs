@@ -265,9 +265,9 @@ the mode doesn't support imenu."
          (global-set-key (kbd "<left-fringe> <mouse-5>") 'bm-next-mouse)
          (global-set-key (kbd "<left-fringe> <mouse-4>") 'bm-previous-mouse)
          (global-set-key (kbd "<left-fringe> <mouse-1>") 'bm-toggle-mouse)
-         :bind (("<f5>" . bm-next)
-                ("S-<f5>" . bm-previous)
-                ("C-<f5>" . bm-toggle)))
+         :bind (("<C-f5>" . bm-next)
+                ("<C-S-f5>" . bm-previous)
+                ("<M-f5>" . bm-toggle)))
 
 
 ;; Folding for fold-dwim
@@ -826,9 +826,12 @@ displayed in the mode-line.")
 (bind-key* (kbd "<M-f4>") 'save-buffers-kill-emacs)
 
 ;; F5
-;; We want M-F5 and M-S-F5 to be overridden 
-(bind-key (kbd "<M-f5>") 'next-error)
-(bind-key (kbd "<M-S-f5>") 'previous-error)
+(bind-key (kbd "<f5>") 'next-error)
+(bind-key (kbd "<S-f5>") 'previous-error)
+(bind-key (kbd "<M-S-f5>")
+          '(lambda () (interactive)
+             (call-interactively 'grep)))
+
 
 ;; F6
 ;; C-F6 is magit-status, defined above

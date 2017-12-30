@@ -52,11 +52,12 @@ Alt-F4		Quit emacs
 Ctrl-F4 	Finish keyboard macro and call it
 Shft-Ctrl-F4  	Start keyboard macro
 
-F5		Go to next bookmark (visible in left margin) 
-Shft-F5		Go to previous bookmark
-Ctrl-F5		Toggle bookmark on/off at cursor
-Alt-F5		Go to next error
-Shft-Alt-F5	Go to previous error
+F5		Go to next error or grep hit
+Shft-F5		Go to previous error or grep hit
+Shft-Alt-F5	Run grep to search in files
+Ctrl-F5		Go to next bookmark (visible in left margin) 
+Shft-Ctrl-F5	Go to previous bookmark
+Alt-F5		Toggle bookmark on/off at cursor (or click in left margin) 
 
 F6		Open up command line (eshell) or jump back from eshell
 Ctrl-F6		Interface to Git (magit)
