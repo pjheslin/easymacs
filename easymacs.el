@@ -604,6 +604,7 @@ displayed in the mode-line.")
     ad-do-it))
 
 ;; Important for long lines
+(require 'grep)
 (grep-apply-setting 'grep-highlight-matches 'always)
 (grep-apply-setting 'grep-command
                     "pcregrep -Mn --color=always '' *.*")
