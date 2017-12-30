@@ -607,7 +607,7 @@ displayed in the mode-line.")
 (require 'grep)
 (grep-apply-setting 'grep-highlight-matches 'always)
 (grep-apply-setting 'grep-command
-                    "pcregrep -Mn --color=always '' *.*")
+                    "pcregrep -MHn --color=always '' *.*")
 
 
 ;;; Regexps: re-builder and pcre2el
