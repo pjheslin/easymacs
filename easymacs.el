@@ -117,11 +117,13 @@
 (setq cua-keep-region-after-copy t)
 (setq org-support-shift-select 'always)
 
-;; redo+ -- simple, linear undo/redo
-(use-package redo+
-   :ensure t
-   :bind* (("C-z" . undo)
- 	 ("C-S-z" . redo)))
+;; The excellent old-fashioned-undo.el gives a simple, linear undo/redo facilty
+(load "old-fashioned-undo.el")
+(require 'old-fashioned-undo)
+(old-fashioned-undo-mode t)
+(diminish 'old-fashioned-undo-mode)
+(global-set-key [(control z)] 'undo)
+(global-set-key [(control Z)] 'redo)
 
 ;; Enable recently-opened files menu
 (setq recentf-auto-cleanup 'never) ;; disable before we start recentf!
