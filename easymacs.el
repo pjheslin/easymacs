@@ -117,7 +117,10 @@
 (setq cua-keep-region-after-copy t)
 (setq org-support-shift-select 'always)
 
-;; The excellent old-fashioned-undo.el gives a simple, linear undo/redo facilty
+;; The excellent old-fashioned-undo.el gives a simple, linear undo/redo facility; it uses the obsolete flet macro, so we need to load a workaround 
+(load "subr-compat")
+(load "dflet.el")
+(require 'dflet)
 (load "old-fashioned-undo.el")
 (require 'old-fashioned-undo)
 (old-fashioned-undo-mode t)

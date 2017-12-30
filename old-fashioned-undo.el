@@ -434,7 +434,7 @@ after last undo/redo command.")
 ;; ----------------------------------------------------------------------------
 (defun* old-fashioned-undo/run-primitive-undo-aux (&key count undo-lst-name by-chunk-p)
   ""
-  (flet ((1st-is-not-boundary (lst)
+  (dflet ((1st-is-not-boundary (lst)
                               (not (null (car lst))))
          (ldiff! (lst sublst)
                  ;; Remove SUBLIST from LIST then return LIST.
