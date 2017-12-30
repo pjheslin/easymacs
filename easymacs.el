@@ -364,9 +364,9 @@ With a prefix arg, changes to grouping by major mode."
   :config
   (setq tabbar-cycle-scope 'tabs)
   (setq tabbar-ruler-global-tabbar t)
-  (setq tabbar-ruler-popup-menu t)
-  (setq tabbar-ruler-popup-toolbar t)
-  (setq tabbar-ruler-popup-scrollbar t)
+  (setq tabbar-ruler-popup-menu nil)
+  (setq tabbar-ruler-popup-toolbar nil)
+  (setq tabbar-ruler-popup-scrollbar nil)
   (setq tabbar-ruler-fancy-tab-separator 'bar)
   (setq tabbar-ruler-fancy-current-tab-separator 'wave)
   (setq tabbar-ruler-tab-padding nil)
@@ -378,6 +378,8 @@ With a prefix arg, changes to grouping by major mode."
           ("<M-tab>" . tabbar-backward-group)
           ("<M-S-tab>" . tabbar-forward-group)
           ("<S-tab>" . tabbar-ruler-move)))
+
+(require 'tabbar-ruler)
 
 ;; Remove interfering mappings (there are others, such as magit)
 (add-hook 'eshell-mode-hook
