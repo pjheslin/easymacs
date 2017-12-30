@@ -129,6 +129,7 @@
 (global-set-key [(control Z)] 'redo)
 
 ;; oed-org.el gives access to the OED API.  I have edited it to add one of my own keys, as the free usage limits are generous. 
+(use-package request :ensure t)
 (load "oed-org-easymacs.el")
 (require 'oed-org)
 
