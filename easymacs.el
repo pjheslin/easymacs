@@ -161,9 +161,8 @@
 (setq ido-use-virtual-buffers t)
 ;; Ignore non-user files in ido
 (defun easymacs-ido-ignore (name)
-  "Ignore all non-user (a.k.a. *starred*) buffers except *eshell*."
-  (and (string-match "^\*" name)
-       (not (string= name "*eshell*"))))
+  "Ignore all non-user (a.k.a. *starred*) buffers."
+  (string-match "^\*" name))
 (setq ido-ignore-buffers '("\\` " easymacs-ido-ignore))
 
 (require 'ibuffer)
@@ -614,7 +613,6 @@ displayed in the mode-line.")
                                           'reb-change-target-buffer)))
 
 
-
 ;;; Elisp
 (defun easymacs-elisp-help ()
   (interactive)
@@ -756,6 +754,7 @@ displayed in the mode-line.")
 (bind-key* (kbd "C-`") 'other-frame)
 (bind-key* (kbd "C-a") 'mark-whole-buffer)
 (bind-key* (kbd "C-s") 'save-buffer)
+(bind-key* (kbd "C-S-s") 'save-some-buffers)
 (bind-key* (kbd "C-n") '(lambda () (interactive)
 				 (let ((last-nonmenu-event nil))
 				   (call-interactively 'find-file))))
