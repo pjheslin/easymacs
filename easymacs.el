@@ -14,7 +14,7 @@
 ;; You should have received a copy of the GNU General Public License along with GNU Emacs; see the file COPYING.  If not, write to the Free Software Foundation, 675 Massachusettes Ave, Cambridge, MA 02139, USA.
 
 (defvar easymacs-version "3.0")
-(unless (string-match "^24.[56789]\\|^2[56789]\\|^[3456789]" emacs-version)
+(unless (string-match "^24.[456789]\\|^2[56789]\\|^[3456789]" emacs-version)
   (error "This version of Emacs is too old to run Easymacs; aborting."))
 (defvar easymacs-dir (file-name-directory
 		      (or load-file-name
