@@ -598,7 +598,10 @@ displayed in the mode-line.")
     ad-do-it))
 
 ;; Important for long lines
-(setq grep-highlight-matches 'always)
+(grep-apply-setting 'grep-highlight-matches 'always)
+(grep-apply-setting 'grep-command
+                    "pcregrep -Mn --color=always '' *.*")
+
 
 ;;; Regexps: re-builder and pcre2el
 (use-package pcre2el
