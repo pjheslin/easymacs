@@ -5,7 +5,7 @@
 ;; Author: Peter Heslin <p.j.heslin@dur.ac.uk>
 ;; Maintainer: Peter Heslin <p.j.heslin@dur.ac.uk>
 ;; 
-;; Copyright (C) 2003-16 Peter Heslin
+;; Copyright (C) 2003-18 Peter Heslin
 ;; 
 ;; This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3, or (at your option) any later version.
 ;; 
@@ -13,7 +13,7 @@
 ;; 
 ;; You should have received a copy of the GNU General Public License along with GNU Emacs; see the file COPYING.  If not, write to the Free Software Foundation, 675 Massachusettes Ave, Cambridge, MA 02139, USA.
 
-(defvar easymacs-version "3.0")
+(defvar easymacs-version "3.1")
 (unless (string-match "^24.[456789]\\|^2[56789]\\|^[3456789]" emacs-version)
   (error "This version of Emacs is too old to run Easymacs; aborting."))
 (defvar easymacs-dir (file-name-directory
@@ -25,8 +25,12 @@
 ;;; Set-up for packages
 (require 'package)
 (setq package-enable-at-startup nil)
+;; No TLS library for https on Windows
 (add-to-list 'package-archives
-	     '("melpa" . "https://melpa.org/packages/") t)
+	     (if (eq system-type 'windows-nt)
+		 '("melpa" . "http://melpa.org/packages/")
+	       '("melpa" . "https://melpa.org/packages/"))
+	     t)
 (package-initialize)
 ;; Set up use-package
 (unless (package-installed-p 'use-package)
@@ -67,6 +71,8 @@
 ;; Put current line number and column in the mode line
 (line-number-mode 1)
 (setq column-number-mode t)
+; For visual-line-mode
+(setq line-number-display-limit-width 2000000)
 ;; Use menu-bar
 (menu-bar-mode 1)
 ;; Paste at cursor, rather than pointer
@@ -77,11 +83,11 @@
 (require 'saveplace)
 (setq-default save-place t)
 
-;; set current buffer's filename, and full path in titlebar
-;(setq frame-title-format '("Emacs %b" (buffer-file-name ": %f")))
-;; Show path info in buffers with otherwise identical filenames
 (require 'uniquify)
-(setq uniquify-buffer-name-style 'post-forward)
+(setq uniquify-buffer-name-style 'forward)
+(setq frame-title-format 
+      '(buffer-file-name "%f" (dired-directory dired-directory "%b")))
+
 ;; Make very frequent autosaves
 (setq auto-save-interval 5)
 ;; Make all backups in a single directory
@@ -98,6 +104,8 @@
 	    (diminish 'visual-line-mode)))
 (global-visual-line-mode)
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
+;; Tabs are evil and break adaptive-wrap
+(setq-default indent-tabs-mode nil)
 
 ;; CUA-mode
 (cua-mode t)
@@ -109,15 +117,17 @@
 (setq cua-keep-region-after-copy t)
 (setq org-support-shift-select 'always)
 
-;; Undo
-(use-package undo-tree
-  :ensure t
-  :diminish undo-tree-mode
-  :config
-  (global-undo-tree-mode 1)
-  :bind* (("C-z" . undo-tree-undo)
-	 ("C-S-z" . undo-tree-redo)
-	 ("M-z" . undo-tree-visualize)))
+;; The excellent old-fashioned-undo.el gives a simple, linear undo/redo facilty
+(load "old-fashioned-undo.el")
+(require 'old-fashioned-undo)
+(old-fashioned-undo-mode t)
+(diminish 'old-fashioned-undo-mode)
+(global-set-key [(control z)] 'undo)
+(global-set-key [(control Z)] 'redo)
+
+;; oed-org.el gives access to the OED API.  I have edited it to add one of my own keys, as the free usage limits are generous. 
+(load "oed-org-easymacs.el")
+(require 'oed-org)
 
 ;; Enable recently-opened files menu
 (setq recentf-auto-cleanup 'never) ;; disable before we start recentf!
@@ -147,7 +157,7 @@
   :diminish company-mode
   :config (progn
 	    (global-company-mode)
-	    (setq company-idle-delay 2))
+	    (setq company-idle-delay nil))
   :bind* (("<f3>" . company-complete)
 	  :map company-active-map
 	  ("<escape>" . company-abort)))
@@ -157,19 +167,15 @@
 (setq ido-use-virtual-buffers t)
 ;; Ignore non-user files in ido
 (defun easymacs-ido-ignore (name)
-  "Ignore all non-user (a.k.a. *starred*) buffers except *eshell*."
-  (and (string-match "^\*" name)
-       (not (string= name "*eshell*"))))
+  "Ignore all non-user (a.k.a. *starred*) buffers."
+  (string-match "^\*" name))
 (setq ido-ignore-buffers '("\\` " easymacs-ido-ignore))
 
 (require 'ibuffer)
 (require 'ibuf-ext)
-(add-to-list 'ibuffer-never-show-predicates "^\\*")
 ;; Simplified ibuffer display
 (setq ibuffer-formats
       '((mark modified read-only " "
-	      (filename-and-process 0 -1 :left :elide))
-	(mark modified read-only " "
 	      (name 0 -1 :left :elide))))
 ;; Make ibuffer refresh after every command
 (add-hook 'ibuffer-mode-hook (lambda () (ibuffer-auto-mode 1)))
@@ -189,41 +195,12 @@ the mode doesn't support imenu."
 (use-package drag-stuff
   :ensure t
   :diminish 'drag-stuff-mode
-  :config (drag-stuff-global-mode 1))
+  :config (progn (drag-stuff-global-mode 1)
+                 (drag-stuff-define-keys)))
 
 ;; Programming tools
 (add-hook 'prog-mode-hook 'linum-mode)
 
-;; Python
-;; brew install python3
-;; pip install virtualenv rope jedi ipython nltk
-
-(use-package elpy
-  :ensure t
-  :config (progn
-	    (elpy-enable)
-	    (setq elpy-rpc-python-command "python3")
-	    ;(elpy-use-ipython)
-	    ))
-;; :bind doesn't work
-(add-hook 'elpy-mode-hook
-	  '(lambda ()
-	     (local-set-key (kbd "<f5>") 'elpy-flymake-next-error)
-	     (local-set-key (kbd "<S-f5>") 'elpy-flymake-previous-error)
-	     (local-set-key (kbd "<f9>") 'elpy-doc)
-	     (local-set-key (kbd "<f10>") 'elpy-check)
-	     (local-set-key (kbd "<S-f10>") 'elpy-format-code)
-	     (local-set-key (kbd "<C-f10>") 'elpy-refactor)
-	     (local-set-key (kbd "<f11>") 'elpy-shell-switch-to-shell)
-	     (local-set-key (kbd "<f12>")
-			    'elpy-shell-send-region-or-buffer)))
-	  
-(setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --classic")
-
-(add-hook 'inferior-python-mode-hook
-	  '(lambda ()
-	     (local-set-key (kbd "<f11>") 'elpy-shell-switch-to-buffer)))
 
 (use-package magit
   :ensure t
@@ -241,9 +218,53 @@ the mode doesn't support imenu."
 (require 'git-gutter-fringe)
 (global-git-gutter-mode 1)
 (setq git-gutter:update-interval 0)
-  
+
+(defun easymacs-git-wdiff ()
+  (interactive)
+  (let ((inhibit-read-only t)
+        (coding-system-for-read 'utf-8-unix)
+        (coding-system-for-write 'utf-8-unix)
+        (git-command (read-string "Git command: "
+                                  "git diff --color-words HEAD")))
+    (shell-command git-command "*git-wdiff*")
+    (switch-to-buffer "*git-wdiff*")
+    (delete-other-windows)
+    (ansi-color-apply-on-region (point-min) (point-max))
+    (visual-line-mode 1)
+    (diff-mode)
+    (read-only-mode)))
+(bind-key* (kbd "<C-S-f6>") 'easymacs-git-wdiff)
+
+
 ;; Visible bookmarks
-(use-package bm :ensure t)
+
+(use-package bm
+         :ensure t
+         :demand t
+         :init
+         (setq bm-restore-repository-on-load t)
+         :config
+         (setq bm-highlight-style 'bm-highlight-only-fringe)
+         (setq bm-cycle-all-buffers t)
+         (setq bm-repository-file (expand-file-name "~/.emacs.d/bm-repository"))
+         (setq-default bm-buffer-persistence t)
+         (add-hook' after-init-hook 'bm-repository-load)
+         (add-hook 'find-file-hooks 'bm-buffer-restore)
+         (add-hook 'kill-buffer-hook #'bm-buffer-save)
+         (add-hook 'kill-emacs-hook #'(lambda nil
+                                          (bm-buffer-save-all)
+                                          (bm-repository-save)))
+         (add-hook 'after-save-hook #'bm-buffer-save)
+         (add-hook 'find-file-hooks   #'bm-buffer-restore)
+         (add-hook 'after-revert-hook #'bm-buffer-restore)
+         (add-hook 'vc-before-checkin-hook #'bm-buffer-save)
+         (global-set-key (kbd "<left-fringe> <mouse-5>") 'bm-next-mouse)
+         (global-set-key (kbd "<left-fringe> <mouse-4>") 'bm-previous-mouse)
+         (global-set-key (kbd "<left-fringe> <mouse-1>") 'bm-toggle-mouse)
+         :bind (("<f5>" . bm-next)
+                ("S-<f5>" . bm-previous)
+                ("C-<f5>" . bm-toggle)))
+
 
 ;; Folding for fold-dwim
 (setq hs-isearch-open t)
@@ -259,7 +280,118 @@ the mode doesn't support imenu."
   :ensure t
   :bind* ("<C-S-v>" . browse-kill-ring))
 
+;; Improve Scrolling Behaviour
+
+;; smooth-scrolling.el keeps several lines of context visible when the cursor nears the top or bottom of the screen, and when the cursor hits that limit it scrolls by a single line rather than jumping by a page.
+
+ (use-package smooth-scrolling
+   :ensure t
+   :diminish 'smooth-scrolling-mode
+   :config (progn (smooth-scrolling-mode 1)
+                  (setq smooth-scroll-margin 5)))
+
+;; smooth-scroll.el has a very different purpose: it implements a scrolling motion when paging up and down.  But this does not work well with the reversible paging below, and it is really just a visual effect; so it is not enabled here.  But the functions to scroll without moving the cursor are useful.
+
+(use-package smooth-scroll
+  :ensure t
+  :diminish 'smooth-scroll-mode
+  :config (smooth-scroll-mode -1)
+  :bind* (("<C-down>"  . scroll-up-1)
+          ("<C-up>"    . scroll-down-1)
+          ("<C-left>"  . scroll-right-1)
+          ("<C-right>" . scroll-left-1)))
+
+;; Code adapted from Emacswiki/Stack Overflow to implement reversible paging.  Paging down and then back up puts you back in the same spot where you started.
+
+(defun sfp-page-down (&optional arg)
+  (interactive "^P")
+  (setq this-command 'next-line)
+  (let ((smooth-scrolling-mode nil))
+    (next-line
+     (- (window-text-height)
+        next-screen-context-lines))))
+(put 'sfp-page-down 'isearch-scroll t)
+(put 'sfp-page-down 'CUA 'move)
+
+(defun sfp-page-up (&optional arg)
+  (interactive "^P")
+  (setq this-command 'previous-line)
+  (let ((smooth-scrolling-mode nil))
+    (previous-line
+     (- (window-text-height)
+        next-screen-context-lines))))
+
+(put 'sfp-page-up 'isearch-scroll t)
+(put 'sfp-page-up 'CUA 'move)
+
+(global-set-key [next] 'sfp-page-down)
+(global-set-key [prior] 'sfp-page-up)
+
+;; Nice looking tabs from tabbar-ruler
+
+;; Used by tabar-ruler; focus is buggy, so switch it off for now
+(use-package powerline
+  :ensure t)
+
+(defun tabbar-buffer-groups-by-dir ()
+        "Put all files in the same directory into the same tab bar"
+        (with-current-buffer (current-buffer)
+          (let ((dir (expand-file-name default-directory)))
+            (cond ;; assign group name until one clause succeeds, so the order is important
+             ((eq major-mode 'dired-mode)
+              (list "Dired"))
+             ((memq major-mode
+                    '(help-mode apropos-mode Info-mode Man-mode))
+              (list "Help"))
+             ((string-match-p "\*.*\*" (buffer-name))
+              (list "Misc"))
+             (t (list dir))))))
+
+(defun tabbar-switch-grouping-method (&optional arg)
+  "Changes grouping method of tabbar to grouping by dir.
+With a prefix arg, changes to grouping by major mode."
+  (interactive "P")
+  (ignore-errors
+    (if arg
+      (setq tabbar-buffer-groups-function 'tabbar-buffer-groups) ;; the default setting
+        (setq tabbar-buffer-groups-function 'tabbar-buffer-groups-by-dir))))
+
+(use-package tabbar-ruler
+  :config
+  (setq tabbar-cycle-scope 'tabs)
+  (setq tabbar-ruler-global-tabbar t)
+  (setq tabbar-ruler-popup-menu t)
+  (setq tabbar-ruler-popup-toolbar t)
+  (setq tabbar-ruler-popup-scrollbar t)
+  (setq tabbar-ruler-fancy-tab-separator 'bar)
+  (setq tabbar-ruler-fancy-current-tab-separator 'wave)
+  (setq tabbar-ruler-tab-padding nil)
+  ;;(setq tabbar-ruler-style 'firefox)
+  (tabbar-switch-grouping-method)
+
+  :bind* (("<C-tab>" . tabbar-forward)
+          ("<C-S-tab>" . tabbar-backward)
+          ("<M-tab>" . tabbar-backward-group)
+          ("<M-S-tab>" . tabbar-forward-group)
+          ("<S-tab>" . tabbar-ruler-move)))
+
+;; Remove interfering mappings (there are others, such as magit)
+(add-hook 'eshell-mode-hook
+          (lambda ()
+            (define-key eshell-mode-map (kbd "<M-tab>") nil)))
+(add-hook 'org-mode-hook
+          (lambda ()
+            (define-key org-mode-map (kbd "<C-tab>") nil)))
+
+
 ;;; Utility functions
+
+(defun unfill-paragraph (&optional region)
+  "Takes a multi-line paragraph and makes it into a single line of text."
+  (interactive (progn (barf-if-buffer-read-only) '(t)))
+  (let ((fill-column (point-max)))
+    (fill-paragraph nil region)))
+(bind-key* (kbd "M-Q") 'unfill-paragraph)
 
 (defun easymacs-make-dist ()
   (interactive)
@@ -318,6 +450,34 @@ the mode doesn't support imenu."
   (switch-to-buffer
    (other-buffer (current-buffer) 1)))
 
+;;; Word count
+;; Pinched from http://www.dr-qubit.org/emacs.php
+
+(setq mode-line-position (assq-delete-all 'wc-mode mode-line-position))
+(setq mode-line-position
+      (append
+       mode-line-position
+       '((wc-mode
+	  (6 (:eval (if (use-region-p)
+			(format " %d,%d,%d"
+				(abs (- (point) (mark)))
+				(count-words-region (point) (mark))
+				(abs (- (line-number-at-pos (point))
+					(line-number-at-pos (mark)))))
+		      (format " %d,%d,%d"
+			      (- (point-max) (point-min))
+			      (count-words-region (point-min) (point-max))
+			      (line-number-at-pos (point-max))))))
+	  nil))))
+(define-minor-mode wc-mode
+  "Toggle word-count mode.
+With no argument, this command toggles the mode.
+A non-null prefix argument turns the mode on.
+A null prefix argument turns it off.
+
+When enabled, the total number of characters, words, and lines is
+displayed in the mode-line.")
+
 ;;; Mac stuff
 (when (memq window-system '(mac ns))
   (setq ns-pop-up-frames nil
@@ -332,125 +492,17 @@ the mode doesn't support imenu."
 ;; Get hunspell dictionaries like so:
 ;; svn co https://src.chromium.org/chrome/trunk/deps/third_party/hunspell_dictionaries/
 ;; make sure that one dictionary is soft-linked to default.dic and default.aff
+;(setenv "DICTIONARY" "en_GB")
+;(setenv "LANG" "en_GB")
+;(setq ispell-local-dictionary "en_GB")
+;(setq ispell-local-dictionary-alist
+;        '(("en_GB" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil nil nil utf-8)))
 (when (executable-find "hunspell")
   (setq-default ispell-program-name "hunspell")
   (setq ispell-really-hunspell t))
 (add-hook 'text-mode-hook '(lambda ()
 			     (flyspell-mode 1)))
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-
-;;; Auctex
-(use-package tex-site
-  :ensure auctex)
-(use-package company-auctex
-  :ensure t
-  :config (company-auctex-init))
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-(setq-default TeX-master 'dwim)
-(setq tex-default-mode 'latex-mode)
-(setq-default TeX-engine 'xetex)
-(setq-default TeX-PDF-mode t)
-(setq-default TeX-save-query nil)
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex) 
-(setq reftex-plug-into-AUCTeX t)
-(setq TeX-source-correlate-method 'synctex)
-(add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
-(add-hook 'LaTeX-mode-hook '(lambda ()
-			      (TeX-fold-mode 1)
-			      ;; For folding comments
-			      (hs-minor-mode 1)))
-
-(defun LaTeX-insert-footnote ()
-  "Insert a \\footnote{} macro in a LaTeX-document."
-  (interactive)
-  (TeX-insert-macro "footnote")
-  (insert "\n")
-  (forward-char)
-  (insert " %")
-  (unless (looking-at "\n")
-    (insert "\n"))
-  (backward-char 4))
-
-(defun LaTeX-insert-emph ()
-  "Insert an \\emph{} macro in a LaTeX-document."
-  (interactive)
-  (TeX-insert-macro "emph"))
-
-(defun LaTeX-insert-textbf ()
-  "Insert a \\textbf{} macro in a LaTeX-document."
-  (interactive)
-  (TeX-insert-macro "textbf"))
-
-(defun LaTeX-insert-textsc ()
-  "Insert a \\textsc{} macro in a LaTeX-document."
-  (interactive)
-  (TeX-insert-macro "textsc"))
-
-(defun LaTeX-insert-uline ()
-  "Insert a \\uline{} macro in a LaTeX-document."
-  (interactive)
-  (TeX-insert-macro "uline"))
-
-(defun easymacs-run-latex ()
-  "Save and LaTeX `TeX-master-file' (without querying the user).
-Any files \\input by `TeX-master-file' are also saved without prompting."
-  (interactive)
-  (let (TeX-save-query)
-    (TeX-save-document (TeX-master-file)))
-  (TeX-command "LaTeX" 'TeX-master-file))
-
-(defun easymacs-auctex-help-at-point ()
-  (interactive)
-  (save-excursion
-    (goto-char (or (TeX-find-macro-start)
-		   (re-search-backward (regexp-quote TeX-esc) nil t)))
-    (re-search-forward (concat (regexp-quote TeX-esc) "\\sw+") nil t)
-    (info-lookup-symbol (match-string 0))))
-
-(add-hook 'LaTeX-mode-hook '(lambda ()
-    (local-set-key (kbd "C-e") 'LaTeX-insert-emph)
-    (local-set-key (kbd "C-b") 'LaTeX-insert-textbf)
-    (local-set-key (kbd "M-p") 'LaTeX-insert-textsc)
-    (local-set-key (kbd "M-f") 'LaTeX-insert-footnote)
-    (local-set-key (kbd "<f9>") 'easymacs-auctex-help-at-point)
-    (local-set-key (kbd "<S-f9>")  'reftex-grep-document)
-    (local-set-key (kbd "<f10>") 'LaTeX-close-environment)
-    (local-set-key (kbd "<S-f10>") 'TeX-complete-symbol)
-    (local-set-key (kbd "<M-f10>") 'LaTeX-environment)
-    (local-set-key (kbd "<M-S-f10>") '(lambda () (interactive)
-					(LaTeX-environment t)))
-    ;; May be overridden for pdf-tools
-    (local-set-key (kbd "<f11>") 'TeX-view)
-    (local-set-key (kbd "<C-f11>") 'TeX-view)
-    (local-set-key (kbd "<S-f11>") 'pdf-sync-forward-search)
-    (local-set-key (kbd "<f12>") 'easymacs-run-latex)
-    (local-set-key (kbd "<S-f12>") 'TeX-command-master)))
-
-
-;; Bibtex
-;; Prompt for bibtex entry types
-(defun easymacs-insert-bibtex-entry ()
-  (interactive)
-  (funcall (intern
-	    (concat "bibtex-"
-		    (completing-read
-		     "Entry type (tab for list): " 
-		     (mapcar 'car bibtex-entry-field-alist))))))
-(add-hook 'bibtex-mode-hook '(lambda ()
-			      (local-set-key (kbd "<f12>")
-					     'bibtex-clean-entry)
-			      (local-set-key (kbd "<f11>")
-					     'easymacs-insert-bibtex-entry)
-			      (local-set-key (kbd "<f10>")
-					     'bibtex-fill-entry)
-			      (local-set-key (kbd "C-e")
-					     'LaTeX-insert-emph)))
-
-(add-hook 'reftex-index-phrases-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-e")
-			   'LaTeX-insert-emph)))
 
 ;;; Eshell
 ;; Always save eshell history without asking
@@ -545,6 +597,12 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
           (isearch-repeat-forward)))
     ad-do-it))
 
+;; Important for long lines
+(grep-apply-setting 'grep-highlight-matches 'always)
+(grep-apply-setting 'grep-command
+                    "pcregrep -Mn --color=always '' *.*")
+
+
 ;;; Regexps: re-builder and pcre2el
 (use-package pcre2el
   :ensure t
@@ -553,13 +611,16 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 
 (use-package re-builder
   :ensure t
-  :config (setq reb-re-syntax 'pcre)
-  :bind* (("<S-f3>" . re-builder)
-	 :map reb-mode-map
-	 ("<f2>" . reb-next-match)
-	 ("<S-f2>" . reb-prev-match)
-	 ("C-q" . reb-quit)
-	 ("C-c" . reb-copy)))
+  :config (setq reb-re-syntax 'pcre))
+;; use-package bind does not work here
+(add-hook 'reb-mode-hook (lambda ()
+                           (local-set-key (kbd "<f5>")
+                                          'reb-next-match)
+                           (local-set-key (kbd "<S-f5>")
+                                          'reb-prev-match)
+                           (local-set-key (kbd "C-b")
+                                          'reb-change-target-buffer)))
+
 
 ;;; Elisp
 (defun easymacs-elisp-help ()
@@ -596,9 +657,11 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 
 ;;; XML
 
-;; For .xhtml files
 (setq auto-mode-alist
-      (cons '("\\.xhtml\\'" . nxml-mode) auto-mode-alist))
+      (cons '("\\.x?html\\'" . nxml-mode) auto-mode-alist))
+(setq magic-mode-alist
+          (cons '("<\\?xml\\s " . nxml-mode) magic-mode-alist))
+
 (defun easymacs-xhtml-outline-level ()
   (let ((tag (buffer-substring (match-beginning 1) (match-end 1))))
     (if (eq (length tag) 2)
@@ -644,11 +707,31 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
       (save-excursion
 	(insert "</" tag-name ">")))))
 
+;; from emacswiki
+(defun nxml-where ()
+      "Display the hierarchy of XML elements the point is on as a path."
+      (interactive)
+      (let ((path nil))
+        (save-excursion
+          (save-restriction
+            (widen)
+            (while (and (< (point-min) (point)) ;; Doesn't error if point is at beginning of buffer
+                        (condition-case nil
+                            (progn
+                              (nxml-backward-up-element) ; always returns nil
+                              t)
+                          (error nil)))
+              (setq path (cons (xmltok-start-tag-local-name) path)))
+            (if (called-interactively-p t)
+                (message "/%s" (mapconcat 'identity path "/"))
+              (format "/%s" (mapconcat 'identity path "/")))))))
+
 (defun easymacs-nxml-mode-hook ()
   (bind-key (kbd "<f5>") 'rng-next-error nxml-mode-map)
   (bind-key (kbd "<S-f5>") 'rng-next-error nxml-mode-map)
   (bind-key (kbd "<f9>") 'tei-html-docs-p5-element-at-point nxml-mode-map)
   (bind-key (kbd "<f10>") 'browse-url-of-buffer nxml-mode-map)
+  (bind-key (kbd "<S-f10>") 'nxml-where nxml-mode-map)
   (bind-key (kbd "<f11>") 'easymacs-insert-tag nxml-mode-map)
   (bind-key (kbd "<C-f11>") 'nxml-split-element nxml-mode-map)
   (bind-key (kbd "<f12>") 'nxml-complete nxml-mode-map)
@@ -680,6 +763,7 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 (bind-key* (kbd "C-`") 'other-frame)
 (bind-key* (kbd "C-a") 'mark-whole-buffer)
 (bind-key* (kbd "C-s") 'save-buffer)
+(bind-key* (kbd "C-S-s") 'save-some-buffers)
 (bind-key* (kbd "C-n") '(lambda () (interactive)
 				 (let ((last-nonmenu-event nil))
 				   (call-interactively 'find-file))))
@@ -691,7 +775,11 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 				   (call-interactively 'find-file-existing))))
 (bind-key* (kbd "C-q") 'save-buffers-kill-emacs)
 (bind-key* (kbd "C-w") 'easymacs-kill-buffer)
-(bind-key* (kbd "C-S-w") 'easymacs-kill-some-buffers)
+(bind-key* (kbd "S-C-w") 'delete-frame)
+(bind-key* (kbd "M-w") 'easymacs-kill-some-buffers)
+
+(bind-key* (kbd "<end>") 'end-of-visual-line)
+(bind-key* (kbd "<home>") 'beginning-of-visual-line)
 
 ;;; Function keys
 
@@ -707,11 +795,7 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 (bind-key* (kbd "<f2>") 'flyspell-auto-correct-previous-word)
 (bind-key* (kbd "<S-f2>") 'ispell-complete-word)
 (bind-key* (kbd "<C-f2>") 'insert-char)
-(bind-key* (kbd "<M-f2>")
-	   '(lambda () (interactive)
-	      (eww (concat "http://www.wordnik.com/words/"
-				  (substring-no-properties
-				    (thing-at-point 'word))))))
+(bind-key* (kbd "<M-f2>") 'oed-quickword)
 (bind-key* (kbd "<S-M-f2>")
 	   '(lambda () (interactive)
 	      (eww (concat "http://moby-thesaurus.org/search?q="
@@ -735,21 +819,18 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 (bind-key* (kbd "<M-f4>") 'save-buffers-kill-emacs)
 
 ;; F5
-;; We want F5 and S-F5 to be overridden 
-(bind-key (kbd "<f5>") 'next-error)
-(bind-key (kbd "<S-f5>") 'previous-error)
-(bind-key* (kbd "<M-f5>") 'bm-next)
-(bind-key* (kbd "<M-S-f5>") 'bm-previous)
-(bind-key* (kbd "<C-f5>") 'bm-toggle)
+;; We want M-F5 and M-S-F5 to be overridden 
+(bind-key (kbd "<M-f5>") 'next-error)
+(bind-key (kbd "<M-S-f5>") 'previous-error)
 
 ;; F6
+;; C-F6 is magit-status, defined above
+;; (S-)M-F6 is git-gutter:next-hunk and previous-hunk
 (bind-key* (kbd "<f6>")
 	   '(lambda () (interactive)
 	      (if (string= (buffer-name) "*eshell*")
 		  (switch-to-buffer (other-buffer (current-buffer)))
 		(easymacs-eshell))))
-;; C-F6 is magit-status, defined above
-;; (S-)M-F6 is git-gutter:next-hunk and previous-hunk
 
 ;; F7
 (bind-key* (kbd "<f7>") 'fold-dwim-toggle)
