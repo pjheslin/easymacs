@@ -322,6 +322,63 @@ the mode doesn't support imenu."
 (global-set-key [next] 'sfp-page-down)
 (global-set-key [prior] 'sfp-page-up)
 
+;; Nice looking tabs from tabbar-ruler
+
+;; Used by tabar-ruler; focus is buggy, so switch it off for now
+(use-package powerline
+  :ensure t)
+
+(defun tabbar-buffer-groups-by-dir ()
+        "Put all files in the same directory into the same tab bar"
+        (with-current-buffer (current-buffer)
+          (let ((dir (expand-file-name default-directory)))
+            (cond ;; assign group name until one clause succeeds, so the order is important
+             ((eq major-mode 'dired-mode)
+              (list "Dired"))
+             ((memq major-mode
+                    '(help-mode apropos-mode Info-mode Man-mode))
+              (list "Help"))
+             ((string-match-p "\*.*\*" (buffer-name))
+              (list "Misc"))
+             (t (list dir))))))
+
+(defun tabbar-switch-grouping-method (&optional arg)
+  "Changes grouping method of tabbar to grouping by dir.
+With a prefix arg, changes to grouping by major mode."
+  (interactive "P")
+  (ignore-errors
+    (if arg
+      (setq tabbar-buffer-groups-function 'tabbar-buffer-groups) ;; the default setting
+        (setq tabbar-buffer-groups-function 'tabbar-buffer-groups-by-dir))))
+
+(use-package tabbar-ruler
+  :config
+  (setq tabbar-cycle-scope 'tabs)
+  (setq tabbar-ruler-global-tabbar t)
+  (setq tabbar-ruler-popup-menu t)
+  (setq tabbar-ruler-popup-toolbar t)
+  (setq tabbar-ruler-popup-scrollbar t)
+  (setq tabbar-ruler-fancy-tab-separator 'bar)
+  (setq tabbar-ruler-fancy-current-tab-separator 'wave)
+  (setq tabbar-ruler-tab-padding nil)
+  ;;(setq tabbar-ruler-style 'firefox)
+  (tabbar-switch-grouping-method)
+
+  :bind* (("<C-tab>" . tabbar-forward)
+          ("<C-S-tab>" . tabbar-backward)
+          ("<M-tab>" . tabbar-backward-group)
+          ("<M-S-tab>" . tabbar-forward-group)
+          ("<S-tab>" . tabbar-ruler-move)))
+
+;; Remove interfering mappings (there are others, such as magit)
+(add-hook 'eshell-mode-hook
+          (lambda ()
+            (define-key eshell-mode-map (kbd "<M-tab>") nil)))
+(add-hook 'org-mode-hook
+          (lambda ()
+            (define-key org-mode-map (kbd "<C-tab>") nil)))
+
+
 ;;; Utility functions
 
 (defun unfill-paragraph (&optional region)
