@@ -5,7 +5,7 @@
 ;; Author: Peter Heslin <p.j.heslin@dur.ac.uk>
 ;; Maintainer: Peter Heslin <p.j.heslin@dur.ac.uk>
 ;; 
-;; Copyright (C) 2003-16 Peter Heslin
+;; Copyright (C) 2003-18 Peter Heslin
 ;; 
 ;; This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3, or (at your option) any later version.
 ;; 
@@ -13,7 +13,7 @@
 ;; 
 ;; You should have received a copy of the GNU General Public License along with GNU Emacs; see the file COPYING.  If not, write to the Free Software Foundation, 675 Massachusettes Ave, Cambridge, MA 02139, USA.
 
-(defvar easymacs-version "3.0")
+(defvar easymacs-version "3.1")
 (unless (string-match "^24.[56789]\\|^2[56789]\\|^[3456789]" emacs-version)
   (error "This version of Emacs is too old to run Easymacs; aborting."))
 (defvar easymacs-dir (file-name-directory
