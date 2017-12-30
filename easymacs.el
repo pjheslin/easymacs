@@ -125,6 +125,10 @@
 (global-set-key [(control z)] 'undo)
 (global-set-key [(control Z)] 'redo)
 
+;; oed-org.el gives access to the OED API.  I have edited it to add one of my own keys, as the free usage limits are generous. 
+(load "oed-org-easymacs.el")
+(require 'oed-org)
+
 ;; Enable recently-opened files menu
 (setq recentf-auto-cleanup 'never) ;; disable before we start recentf!
 (recentf-mode 1)
@@ -788,11 +792,7 @@ displayed in the mode-line.")
 (bind-key* (kbd "<f2>") 'flyspell-auto-correct-previous-word)
 (bind-key* (kbd "<S-f2>") 'ispell-complete-word)
 (bind-key* (kbd "<C-f2>") 'insert-char)
-(bind-key* (kbd "<M-f2>")
-	   '(lambda () (interactive)
-	      (eww (concat "http://www.wordnik.com/words/"
-				  (substring-no-properties
-				    (thing-at-point 'word))))))
+(bind-key* (kbd "<M-f2>") 'oed-quickword)
 (bind-key* (kbd "<S-M-f2>")
 	   '(lambda () (interactive)
 	      (eww (concat "http://moby-thesaurus.org/search?q="
