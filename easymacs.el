@@ -487,6 +487,11 @@ displayed in the mode-line.")
 ;; Get hunspell dictionaries like so:
 ;; svn co https://src.chromium.org/chrome/trunk/deps/third_party/hunspell_dictionaries/
 ;; make sure that one dictionary is soft-linked to default.dic and default.aff
+;(setenv "DICTIONARY" "en_GB")
+;(setenv "LANG" "en_GB")
+;(setq ispell-local-dictionary "en_GB")
+;(setq ispell-local-dictionary-alist
+;        '(("en_GB" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil nil nil utf-8)))
 (when (executable-find "hunspell")
   (setq-default ispell-program-name "hunspell")
   (setq ispell-really-hunspell t))
