@@ -28,10 +28,6 @@
 (setq TeX-view-program-list
       '(("PDF Tools" easymacs-TeX-pdf-tools-sync-view)))
 
-(setq TeX-view-program-selection'((output-dvi "open")
-				  (output-pdf "PDF Tools")
-				  (output-html "open")))
-
 (defun easymacs-latex-pdf-frame ()
   (interactive)
   (let ((output-file (TeX-active-master (TeX-output-extension))))
