@@ -399,6 +399,17 @@ With a prefix arg, changes to grouping by major mode."
     (fill-paragraph nil region)))
 (bind-key* (kbd "M-Q") 'unfill-paragraph)
 
+;; Like vi's % command (from Emacswiki)
+(defun forward-or-backward-sexp (&optional arg)
+  "Go to the matching parenthesis character if one is adjacent to point."
+  (interactive "^p")
+  (cond ((looking-at "\\s(") (forward-sexp arg))
+        ((looking-back "\\s)" 1) (backward-sexp arg))
+        ;; Now, try to succeed from inside of a bracket
+        ((looking-at "\\s)") (forward-char) (backward-sexp arg))
+        ((looking-back "\\s(" 1) (backward-char) (forward-sexp arg))))
+(bind-key* (kbd "C-%") 'forward-or-backward-sexp)
+
 (defun easymacs-make-dist ()
   (interactive)
   (save-some-buffers)
