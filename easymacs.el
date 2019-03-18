@@ -776,6 +776,11 @@ displayed in the mode-line.")
 	      ("<f12>" . markdown-live-preview-mode)))
 
 ;;; Global key-bindings
+
+;; For UK Macs
+(define-key key-translation-map (kbd "M-3") (kbd "#"))
+(define-key key-translation-map (kbd "M-2") (kbd "€"))
+
 (bind-key* [escape] 'keyboard-escape-quit)
 (bind-key* (kbd "<S-escape>") 'delete-other-windows)
 (bind-key* (kbd "C-`") 'other-frame)
