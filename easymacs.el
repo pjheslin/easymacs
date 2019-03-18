@@ -506,17 +506,19 @@ displayed in the mode-line.")
 	    (exec-path-from-shell-initialize)))
 
 ;;; Spell-checking
+;; Some bugs with hunspell support at the moment, so commented out
 ;; Get hunspell dictionaries like so:
 ;; svn co https://src.chromium.org/chrome/trunk/deps/third_party/hunspell_dictionaries/
 ;; make sure that one dictionary is soft-linked to default.dic and default.aff
-;(setenv "DICTIONARY" "en_GB")
-;(setenv "LANG" "en_GB")
-;(setq ispell-local-dictionary "en_GB")
-;(setq ispell-local-dictionary-alist
-;        '(("en_GB" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil nil nil utf-8)))
-(when (executable-find "hunspell")
-  (setq-default ispell-program-name "hunspell")
-  (setq ispell-really-hunspell t))
+;(when (executable-find "hunspell")
+;  (setq-default ispell-program-name "hunspell")
+;  (setq ispell-really-hunspell t))
+
+;; Homebrew nicely installs aspell with many languages by default
+(when (executable-find "aspell")
+  (setq-default ispell-program-name "aspell")
+  (setq ispell-really-aspell t))
+
 (add-hook 'text-mode-hook '(lambda ()
 			     (flyspell-mode 1)))
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
