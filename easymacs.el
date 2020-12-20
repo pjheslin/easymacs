@@ -506,15 +506,8 @@ displayed in the mode-line.")
 	    (exec-path-from-shell-initialize)))
 
 ;;; Spell-checking
-;; Some bugs with hunspell support at the moment, so commented out
-;; Get hunspell dictionaries like so:
-;; svn co https://src.chromium.org/chrome/trunk/deps/third_party/hunspell_dictionaries/
-;; make sure that one dictionary is soft-linked to default.dic and default.aff
-;(when (executable-find "hunspell")
-;  (setq-default ispell-program-name "hunspell")
-;  (setq ispell-really-hunspell t))
-
-;; Homebrew nicely installs aspell with many languages by default
+;; Use aspell instead of hunspell, as it is easier to install dictionaries.
+;; Homebrew on OS X nicely installs aspell with loads of languages by default.
 (when (executable-find "aspell")
   (setq-default ispell-program-name "aspell")
   (setq ispell-really-aspell t))
