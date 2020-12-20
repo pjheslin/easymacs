@@ -209,7 +209,8 @@ the mode doesn't support imenu."
 (use-package magit
   :ensure t
   :bind* ("<f6>" . magit-status)
-  :config (setq magit-diff-refine-hunk 'all))
+  :config (progn (setq magit-diff-refine-hunk 'all)
+                 (setq magit-diff-refine-ignore-whitespace nil)))
 ;; To finish magit sub-editor
 (eval-after-load "with-editor"
     '(define-key with-editor-mode-map (kbd "<f12>") 'with-editor-finish))
