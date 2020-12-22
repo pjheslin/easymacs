@@ -71,12 +71,15 @@ Shft-Alt-F7	Open all folds
 Ctrl-F7		Go to next section
 Shft-Ctrl-F7	Go to previous section
 
+Ctrl-F8         Show project trees (treemacs)
+Shft-Ctrl-F8    Jump back and forth to treemacs window
+
 There are thousands of Emacs commands that have complex and difficult to remember keystrokes.  An easier way to invoke these is to type Alt-X and then the name of the command.  For example:
 
 Alt-X re-builder    Start creating a regular expression (pcre syntax)	 
 Alt-X occur	    Show all lines matching a pattern
 
-Function keys F8 to F12 are reserved for commands that pertain to particular types of files.
+Function keys F9 to F12 are reserved for commands that pertain to particular types of files.
 
 XML:
 
