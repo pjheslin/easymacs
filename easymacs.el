@@ -375,6 +375,19 @@ the mode doesn't support imenu."
       (other-window 1)
     (treemacs-select-window)))
 
+;; Flycheck
+
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+(setq next-error-verbose nil)
+
+(use-package flycheck-pos-tip
+  :ensure t
+  :after flycheck
+  :init (flycheck-pos-tip-mode))
+
+
 ;;; Utility functions
 
 (defun unfill-paragraph (&optional region)
