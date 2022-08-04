@@ -79,10 +79,10 @@
 (setq mouse-yank-at-point t)
 ;; save command history
 (savehist-mode 1)
-;; Save our session
-(require 'saveplace)
-(setq-default save-place t)
-
+;; Save our place
+;;(require 'saveplace)
+;;(setq-default save-place t)
+(save-place-mode 1) 
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
 (setq frame-title-format 
@@ -387,7 +387,6 @@ the mode doesn't support imenu."
   :after flycheck
   :init (flycheck-pos-tip-mode))
 
-
 ;;; Utility functions
 
 (defun unfill-paragraph (&optional region)
@@ -570,6 +569,42 @@ displayed in the mode-line.")
        (define-key dired-mode-map "^" (function
 				       (lambda nil (interactive)
 					 (find-alternate-file ".."))))))
+(add-hook 'dired-mode-hook
+      (lambda ()
+        (dired-hide-details-mode)
+        (treemacs-icons-dired-mode)
+        ;(dired-sort-toggle-or-edit)
+        ))
+
+; (use-package dired-toggle
+;   :defer t
+;   :bind (("<f3>" . #'dired-toggle)
+;          :map dired-mode-map
+;          ("q" . #'dired-toggle-quit)
+;          ([remap dired-find-file] . #'dired-toggle-find-file)
+;          ([remap dired-up-directory] . #'dired-toggle-up-directory)
+;          ("C-c C-u" . #'dired-toggle-up-directory))
+;   :config
+;   (setq dired-toggle-window-size 32)
+;   (setq dired-toggle-window-side 'left)
+
+;   ;; Optional, enable =visual-line-mode= for our narrow dired buffer:
+;   (add-hook 'dired-toggle-mode-hook
+;             (lambda () (interactive)
+;               (visual-line-mode 1)
+;               (setq-local visual-line-fringe-indicators '(nil right-curly-arrow))
+;               (setq-local word-wrap nil))))
+
+
+; (use-package dired-subtree
+;   ; :straight t
+;   :after dired
+;   :config
+;   (setq dired-subtree-use-backgrounds nil)
+;   :bind (:map dired-mode-map
+;               ("<tab>" . dired-subtree-toggle)
+;               ("<C-tab>" . dired-subtree-cycle)
+;               ("<S-iso-lefttab>" . dired-subtree-remove)))
 
 ;;; Isearch
 

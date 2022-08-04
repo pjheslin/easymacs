@@ -72,6 +72,8 @@ Any files \\input by `TeX-master-file' are also saved without prompting."
 
 (add-hook 'LaTeX-mode-hook '(lambda ()
     (local-set-key (kbd "C-e") 'LaTeX-insert-emph)
+    ;; C-i maps to tab
+    (local-set-key (kbd "M-i") 'LaTeX-insert-emph)
     (local-set-key (kbd "C-b") 'LaTeX-insert-textbf)
     (local-set-key (kbd "M-p") 'LaTeX-insert-textsc)
     (local-set-key (kbd "M-f") 'LaTeX-insert-footnote)
